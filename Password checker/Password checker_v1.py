@@ -43,5 +43,19 @@ def cache_valido():
     ainda_valido = datetime.now() < prazo_valido
     
     return ainda_valido
+
+def salvar_cache(lista_senhas):
+    # salva a lista de senhas em um arquivo JSON local, junto com o timestamp de quando foi baixada
+    
+    dados_cache = {
+        "salvo_em": datetime.now(). isoformat(),
+        "total": len(lista_senhas),
+        "senhas": lista_senhas
+    }
+    
+    with open(CACHE_LOCAL, "w", encoding="utf-8") as f:
+        json.dump(dados_cache, f, ensure_ascii=False, indent=2)
+        
+    print(f"[cache] {len(lista_senhas)} Senhas salvas em '{CACHE_LOCAL}'")
     
     
