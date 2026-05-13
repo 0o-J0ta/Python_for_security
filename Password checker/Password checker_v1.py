@@ -58,4 +58,12 @@ def salvar_cache(lista_senhas):
         
     print(f"[cache] {len(lista_senhas)} Senhas salvas em '{CACHE_LOCAL}'")
     
+def carregar_cache():
+    #aqui eu ja vou deixar para baixar o arquivo local
     
+    with open(CACHE_LOCAL, "r", encoding="utf-8") as f:
+        dados = json.load(f)
+    
+    print(f"[cache] {dados["total"]} senhas carregada no cache local")
+    return dados["senhas"]
+
