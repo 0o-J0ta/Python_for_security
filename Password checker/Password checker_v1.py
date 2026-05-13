@@ -33,4 +33,15 @@ def cache_valido():
     with open(CACHE_LOCAL, "r", encoding="utf-8") as f:
         dados = json.load(f)
     
-    if "salvo_em"
+    if "salvo_em" not in dados:
+        return False
+    
+    #conversão do meu timestamp gravado para o objeto do datetime
+    salvo_em = datetime.fromisoformat(dados["salvo_em"])
+    
+    prazo_valido = salvo_em + timedelta(hours=HORAS_CACHE)
+    ainda_valido = datetime.now() < prazo_valido
+    
+    return ainda_valido
+    
+    
