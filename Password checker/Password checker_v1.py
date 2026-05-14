@@ -124,3 +124,13 @@ def buscar_senhas_comuns():
         "12345", "1234567", "1234567890", "qwerty",
         "abc123", "password1", "111111", "senha"
     ]    
+    
+#Validação da senha
+
+def verificar_senha(senha, lista_senhas):
+    #Verifica se a senha está na lista de senhas comuns, a comparação é feita em minúsculas para pegar
+    
+    return senha.lower() in [s.lower() for s in lista_senhas]
+
+
+    
