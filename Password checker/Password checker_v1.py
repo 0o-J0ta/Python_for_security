@@ -56,7 +56,7 @@ def salvar_cache(lista_senhas):
     with open(CACHE_LOCAL, "w", encoding="utf-8") as f:
         json.dump(dados_cache, f, ensure_ascii=False, indent=2)
         
-    print(f"[cache] {len(lista_senhas)} Senhas salvas em '{CACHE_LOCAL}'")
+    print(f"[CACHE] {len(lista_senhas)} Senhas salvas em '{CACHE_LOCAL}'")
     
 def carregar_cache():
     #aqui eu ja vou deixar para baixar o arquivo local
@@ -64,6 +64,63 @@ def carregar_cache():
     with open(CACHE_LOCAL, "r", encoding="utf-8") as f:
         dados = json.load(f)
     
-    print(f"[cache] {dados["total"]} senhas carregada no cache local")
+    print(f"[CACHE] {dados["total"]} senhas carregada no cache local")
     return dados["senhas"]
 
+#busca as senhas
+
+def buscar_senhas_comuns():
+    #nessa função vai ficar a busca pela minha lista de senhas comuns
+    
+    if cache_valido():
+        print("[INFO] Usando cache local(dentro do prazo de 12h)")
+        return carregar_cache()
+    
+    print("[INFO] Baixando lista de senhas comuns...")
+    print(f"[INFO] fonte: {URL_SENHAS}")
+    
+    try:
+        #temporizador de 10 segundos
+        resposta = requests.get(URL_SENHAS, timeout=10)
+        
+        #validador da requisição. 
+        resposta.raise_for_status() 
+        
+        #Processa o conteúdo linha por linha
+        #splitlines() divide pelo \n
+        #strip() remove espaços e \r no Windows
+        #ignora linhas vazias com o "if senha"
+        lista_senhas = [
+            linha.strip()
+            for linha in resposta.text.splitlines()
+            if linha.strip()
+        ]
+        
+        print(f"[OK] {len(lista_senhas)} senhas carregadas com sucesso!!")
+        
+        #salva a minha lista por 12h
+        salvar_cache(lista_senhas)
+        return lista_senhas
+    
+    #except, se não der certo na primeira requisição ele continua o programa pra esse etapa
+    
+    except requests.exceptions.ConnectionError:
+        print("[ERRO] sem conexão com a internet")
+        
+    except requests.exceptions.Timeout:
+        print("[ERRO] A requisição demorou mais de 10 segundos")    
+        
+    except requests.exceptions.HTTPError as x:
+        print(f"[ERRO] Resposta HTTP invalida: {x}")
+        
+    #se der um erro desses, mas tem cache vai usar ele (se tiver expirado tbm)
+    if os.path.exists(CACHE_LOCAL):
+        print("[AVISO] Usando cache expirado como fallback") #contingência, mas coloque assim pra ficar mais tecnico 
+        
+    #sem net e sem o cache tbm
+    print("[AVISO] Retornando lista mínima de emergência")
+    return[
+        "123456", "password", "123456789", "12345678",
+        "12345", "1234567", "1234567890", "qwerty",
+        "abc123", "password1", "111111", "senha"
+    ]    
