@@ -1,5 +1,6 @@
 import requests
 import json
+import re
 import hashlib
 import os 
 from datetime import datetime, timedelta
@@ -132,5 +133,47 @@ def verificar_senha(senha, lista_senhas):
     
     return senha.lower() in [s.lower() for s in lista_senhas]
 
+def analisador_senha(senha):
+    #Parte central do codigo, vai validar se esta dentro da lista e os criterios de uma senha forte
+    #Retorna tbm o score
+    
+    lista = buscar_senhas_comuns()
+    problemas = []
+    score = 100
+    
+    #validação se é uma senha comum:
+    if verificar_senha(senha, lista):
+        problemas.append("CRÍTICO - Está na lista de senhas mais comuns do mundo!")
+        score -= 80
+        
+    #Comprimento da senha
+    if len(senha) <8:
+        problemas.append(f"Muito curta ({len(senha)} chars) - Ideal seria 12+")
+        score -= 10
+    
+    elif len(senha) <12:
+        problemas.append(f"Comprimento razoavel ({len(senha)} chars) - Idela seria 12+")
+        score -= 10
+    
+    #validação do tipo do caracter
+    if not re.search(r"[^\w\s]",senha):
+        problemas.append("Sem caracteres £$P&C!@!$")
+        score -= 10
+
+    if not re.search(r"[A-Z]",senha):
+        problemas.append("Sem letras MAIÚSCULAS")
+        score -= 10
+        
+    if not re.search(r"[a-z]",senha):
+        problemas.append("Sem letras minusculas")
+        score -= 10
+    
+    if not re.search(r"[0-9]",senha):
+        problemas.append("Sem NUM3R02")
+        score -= 10
+        
+    
+    
+ 
 
     
