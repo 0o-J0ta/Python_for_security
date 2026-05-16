@@ -172,6 +172,49 @@ def analisador_senha(senha):
         problemas.append("Sem NUM3R02")
         score -= 10
         
+    #limite do score
+    score = max(0, min(100, score))
+    
+    #Classificação do nivel da senha
+    if score >= 80:
+        nivel="FORTE"
+    
+    elif score >= 50:
+        nivel="MÉDIA"
+        
+    elif score >= 20:
+        nivel = "FRACA"
+    
+    else:
+        nivel = "MUITO FRAQUINHA"
+        
+    return {
+        "Senha": senha,
+        "Score": score,
+        "Nivel": nivel,
+        "Problemas": problemas,
+        "Total lista": len(lista)
+               
+    }
+        
+#Execução principal
+
+if __name__ == "__main__":
+    
+    senha_teste =[
+        "123456",          
+        "password",        
+        "MinhaSenh@2024",  
+        "abc",             
+        "qwerty123",       
+        "T#9kLm!vX2@p",    
+    ]
+    
+    print()
+    print()
+    print()
+    
+    
     
     
  
