@@ -49,7 +49,7 @@ def salvar_cache(lista_senhas):
     # salva a lista de senhas em um arquivo JSON local, junto com o timestamp de quando foi baixada
     
     dados_cache = {
-        "salvo_em": datetime.now(). isoformat(),
+        "salvo_em": datetime.now().isoformat(),
         "total": len(lista_senhas),
         "senhas": lista_senhas
     }
@@ -65,7 +65,7 @@ def carregar_cache():
     with open(CACHE_LOCAL, "r", encoding="utf-8") as f:
         dados = json.load(f)
     
-    print(f"[CACHE] {dados["total"]} senhas carregada no cache local")
+    print(f"[CACHE] {dados['total']} senhas carregada no cache local")
     return dados["senhas"]
 
 #busca as senhas
@@ -117,6 +117,7 @@ def buscar_senhas_comuns():
     #se der um erro desses, mas tem cache vai usar ele (se tiver expirado tbm)
     if os.path.exists(CACHE_LOCAL):
         print("[AVISO] Usando cache expirado como fallback") #contingência, mas coloque assim pra ficar mais tecnico 
+        return carregar_cache()
         
     #sem net e sem o cache tbm
     print("[AVISO] Retornando lista mínima de emergência")
@@ -201,19 +202,32 @@ def analisador_senha(senha):
 
 if __name__ == "__main__":
     
-    senha_teste =[
-        "123456",          
-        "password",        
-        "MinhaSenh@2024",  
-        "abc",             
-        "qwerty123",       
-        "T#9kLm!vX2@p",    
+    senhas_testes =[
+        "123456",          # senha super comum
+        "password",        # clássico
+        "MinhaSenh@2024",  # boa senha
+        "abc",             # muito curta
+        "qwerty123",       # comum com número
+        "T#9kLm!vX2@p"           
     ]
     
-    print()
-    print()
-    print()
+    print("="*60)
+    print("PASSWORD VALIDATOR - SECLIST + PYTHON".center(60))
+    print("="*60)
     
+    for senha in senhas_testes:
+        resultado = analisador_senha(senha)
+
+        print(f"Senha:  {resultado['Senha']}")
+        print(f"Score:  {resultado['Score']}/100  |  Nível: {resultado['Nivel']}")
+
+        if resultado["Problemas"]:
+            for p in resultado["Problemas"]:
+                print(f"  [!] {p}")
+        else:
+            print("  [OK] Nenhum problema encontrado")
+
+        print("-" * 45)
     
     
     
