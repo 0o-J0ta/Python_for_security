@@ -3,13 +3,14 @@ import json
 import re
 import hashlib
 import os 
+import getpass
 from datetime import datetime, timedelta
 
 #URL da lista de senhas comuns(seclist)
 
 URL_SENHAS = (
     "https://raw.githubusercontent.com/danielmiessler/"
-    "SecLists/master/Passwords/Common-Credentials/"
+    "SecLists/refs/heads/master/Passwords/Common-Credentials/"
     "10-million-password-list-top-1000.txt"
 )
 
@@ -20,7 +21,7 @@ CACHE_LOCAL = "cache_senhas.json"
 HORAS_CACHE = 12
 
 #Funções
-
+ 
 #Cache
 
 def cache_valido():
@@ -134,7 +135,7 @@ def verificar_senha(senha, lista_senhas):
     
     return senha.lower() in [s.lower() for s in lista_senhas]
 
-def analisador_senha(senha):
+def analisador_senha(senha, lista):
     #Parte central do codigo, vai validar se esta dentro da lista e os criterios de uma senha forte
     #Retorna tbm o score
     
@@ -198,39 +199,138 @@ def analisador_senha(senha):
                
     }
         
-#Execução principal
+#Exibição do resultado da senha informada
 
-if __name__ == "__main__":
+def exibir_resultado(resultado):
     
-    senhas_testes =[
-        "123456",          
-        "password",        
-        "MinhaSenh@2024",  
-        "abc",             
-        "qwerty123",       
-        "T#9kLm!vX2@p"           
-    ]
+    print("")
+    print("=" * 60)
+    print("RESULTADO DA ANALISE".center(60))
+    print("=" * 60)
     
-    print("="*60)
-    print("PASSWORD VALIDATOR - SECLIST + PYTHON".center(60))
-    print("="*60)
+    #Teste de barra de score(A ideia que quis colocar e para ter uma barra de progresso para ver se a senha é boa ou não)
+    score = resultado["Score"]
+    nivel = resultado["Nivel"]
+    preenchimento = int(score / 5)
+    vazio = 20 - preenchimento
     
-    for senha in senhas_testes:
-        resultado = analisador_senha(senha)
+    #Definição da barra de acordo com o nivel de progresso da senha
+    if score >= 80:
+        barra = "[" + "#" * preenchimento + "-" * vazio + "]"
+    
+    elif score >= 50:
+        barra = "[" + "#" * preenchimento + "-" * vazio + "]"
+    
+    elif score >= 20:
+        barra = "[" + "#" * preenchimento + "-" * vazio + "]"
+    
+    else:
+        barra = "[" + "#" * preenchimento + "-" * vazio + "]"
+        
+    print(f"\n Score: {score}/100 {barra}")
+    print(f"Nivel: {nivel}")
+    print(f" Verificando contra {resultado['Total lista']} senhas comuns")
+    print("")
+    
+    # Indicativo de problemas encontrados dentro da senha
+    if resultado["Problemas"]:
+        print("PROBLEMAS ENCONTRADOS:")
+        print("-" * 60)
+        
+        for p in resultado["Problemas"]:
+            print(f"  [!] {p}")
+            
+    else:
+        print("[OK] Nenhum problema encontrado!")
+        print(" Sua senha passou em todos os criterios.")
 
-        print(f"Senha:  {resultado['Senha']}")
-        print(f"Score:  {resultado['Score']}/100  |  Nível: {resultado['Nivel']}")
+    print("")
 
-        if resultado["Problemas"]:
-            for p in resultado["Problemas"]:
-                print(f"  [!] {p}")
-        else:
-            print("  [OK] Nenhum problema encontrado")
+    # Diagnostico sobre a senha informada
+    print("  DICA:")
+    print("-" * 60)
+    
+    if nivel == "FORTE":
+        print(" Otima senha! Continue usando combinacoes")
+        print(" de letras, numeros e simbolos assim.")
+        
+    elif nivel == "MEDIA":
+        print(" Senha razoavel. Tente adicionar mais")
+        print(" caracteres especiais e aumentar o tamanho.")
+        
+    elif nivel == "FRACA":
+        print(" Senha fraca. Recomendamos trocar por uma")
+        print(" com 12+ caracteres, maiusculas, numeros e")
+        print(" simbolos como: !@#$%")
+        
+    else:
+        print(" Senha muito fraca ou comprometida.")
+        print(" Troque IMEDIATAMENTE por uma senha forte.")
 
-        print("-" * 45)
-    
-    
+    print("=" * 60)
     
  
-
+def menu_principal():
     
+    print("=" * 60)
+    print("PASSWORD VALIDATOR".center(60))
+    print("SecLists + Python".center(60))
+    print("=" * 60)
+    print("")
+
+    # Baixa a lista UMA vez antes do loop, pra evitar de ficar aparecendo varias vezes que a lista foi baixada
+    
+    print("[INFO] Carregando lista de senhas comuns...")
+    lista = buscar_senhas_comuns()
+
+    print("")
+    print("Digite uma senha para analisar.")
+    print("Digite 'sair' para encerrar.")
+    print("Digite 'limpar' para limpar a tela.")
+    print("-" * 60)
+
+    # Loop para não sair do programa ate que seja executado o "sair"
+    while True:
+
+        print("")
+
+        
+        senha = getpass.getpass("Digite sua senha para validação: ")
+
+
+        # Encerra o programa
+        if senha.lower() == "sair":
+            print()
+            print("  Encerrando o Password Validator.")
+            print("  Mantenha suas senhas seguras!")
+            print("=" * 50)
+            break
+
+        # Limpa a tela
+        if senha.lower() == "limpar":
+            os.system("cls" if os.name == "nt" else "clear")
+            continue
+
+        # Senha vazia — pede de novo
+        if not senha.strip():
+            print("  [AVISO] Voce não digitou nada. Tente novamente.")
+            continue
+
+        # ── Analisa a senha digitada ──
+        resultado = analisador_senha(senha, lista)
+        exibir_resultado(resultado)
+
+        # Pergunta se quer testar outra
+        print()
+        continuar = input("  Testar outra senha? (s/n): ").strip().lower()
+
+        if continuar != "s":
+            print()
+            print("  Encerrando o Password Validator.")
+            print("  Mantenha suas senhas seguras!")
+            print("=" * 50)
+            break
+
+#programa principal para executar o menu
+if __name__ == "__main__":
+    menu_principal()
